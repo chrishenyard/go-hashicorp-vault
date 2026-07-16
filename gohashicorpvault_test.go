@@ -3,6 +3,9 @@ package gohashicorpvault
 import (
 	"os"
 	"testing"
+
+	"github.com/hashicorp/vault-client-go"
+	"github.com/hashicorp/vault-client-go/schema"
 )
 
 func TestGetSecrets_ReturnValue(t *testing.T) {
@@ -19,5 +22,10 @@ func TestGetSecrets_ReturnValue(t *testing.T) {
 	secretList, err := getSecrets(options)
 	if secretList == nil || err != nil {
 		t.Errorf("Expected non-nil secretList and no error, got secretList: %v, err: %v", secretList, err)
+	}
+
+	var typedSecretList *vault.Response[schema.KvV2ReadResponse] = secretList
+	if typedSecretList == nil {
+		t.Errorf("Expected return type *vault.Response[schema.KvV2ReadResponse], got %T", secretList)
 	}
 }
