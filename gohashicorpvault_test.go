@@ -12,6 +12,8 @@ func TestGetSecrets_ReturnValue(t *testing.T) {
 	// Test function to ensure that getSecrets returns a non-nil client and no error.
 	options := &Options{
 		Address:                       os.Getenv("VAULT_ADDR"),
+		AuthMethod:                    "approle",
+		KubernetesJwtPath:             os.Getenv("VAULT_KUBERNETES_JWT_PATH"),
 		RoleId:                        os.Getenv("VAULT_ROLE_ID"),
 		SecretId:                      os.Getenv("VAULT_SECRET_ID"),
 		MountPoint:                    os.Getenv("VAULT_MOUNT_POINT"),

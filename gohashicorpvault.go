@@ -2,6 +2,7 @@ package gohashicorpvault
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/hashicorp/vault-client-go"
@@ -22,13 +23,7 @@ func getSecrets(options *Options) (*vault.Response[schema.KvV2ReadResponse], err
 		return nil, err
 	}
 
-	resp, err := client.Auth.AppRoleLogin(
-		ctx,
-		schema.AppRoleLoginRequest{
-			RoleId:   options.RoleId,
-			SecretId: options.SecretId,
-		},
-	)
+	resp, err := authenticateWithVault(ctx, client, options)
 	if err != nil {
 		return nil, err
 	}
@@ -46,4 +41,50 @@ func getSecrets(options *Options) (*vault.Response[schema.KvV2ReadResponse], err
 	}
 
 	return secretList, nil
+}
+
+func authenticateWithVault(ctx context.Context, client *vault.Client, options *Options) (*vault.Response[map[string]interface{}], error) {
+	switch options.AuthMethod {
+	case "approle":
+		resp, err := client.Auth.AppRoleLogin(
+			ctx,
+			schema.AppRoleLoginRequest{
+				RoleId:   options.RoleId,
+				SecretId: options.SecretId,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	case "kubernetes":
+		jwt, err := os.ReadFile(options.KubernetesJwtPath)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := client.Auth.KubernetesLogin(
+			ctx,
+			schema.KubernetesLoginRequest{
+				Role: options.RoleName,
+				Jwt:  string(jwt),
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	default:
+		return nil, nil
+	}
 }
