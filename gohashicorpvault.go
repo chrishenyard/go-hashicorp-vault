@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/vault-client-go/schema"
 )
 
-func getSecrets(options *Options) (*vault.Response[schema.KvV2ReadResponse], error) {
+func GetSecrets(options *Options) (*vault.Response[schema.KvV2ReadResponse], error) {
 	ctx := context.Background()
 
 	client, err := vault.New(

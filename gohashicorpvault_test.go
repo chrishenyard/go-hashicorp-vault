@@ -15,6 +15,7 @@ func TestGetSecrets_ReturnValue(t *testing.T) {
 		AuthMethod:                    "approle",
 		KubernetesJwtPath:             os.Getenv("VAULT_KUBERNETES_JWT_PATH"),
 		RoleId:                        os.Getenv("VAULT_ROLE_ID"),
+		RoleName:                      os.Getenv("VAULT_ROLE_NAME"),
 		SecretId:                      os.Getenv("VAULT_SECRET_ID"),
 		MountPoint:                    os.Getenv("VAULT_MOUNT_POINT"),
 		SecretPath:                    os.Getenv("VAULT_SECRET_PATH"),
