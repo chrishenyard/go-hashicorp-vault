@@ -2,6 +2,7 @@ package gohashicorpvault
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -23,12 +24,7 @@ func GetSecrets(options *Options) (*vault.Response[schema.KvV2ReadResponse], err
 		return nil, err
 	}
 
-	resp, err := authenticateWithVault(ctx, client, options)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := client.SetToken(resp.Auth.ClientToken); err != nil {
+	if err := authenticateWithVault(ctx, client, options); err != nil {
 		return nil, err
 	}
 
@@ -43,7 +39,7 @@ func GetSecrets(options *Options) (*vault.Response[schema.KvV2ReadResponse], err
 	return secretList, nil
 }
 
-func authenticateWithVault(ctx context.Context, client *vault.Client, options *Options) (*vault.Response[map[string]interface{}], error) {
+func authenticateWithVault(ctx context.Context, client *vault.Client, options *Options) error {
 	switch options.AuthMethod {
 	case "approle":
 		resp, err := client.Auth.AppRoleLogin(
@@ -54,18 +50,18 @@ func authenticateWithVault(ctx context.Context, client *vault.Client, options *O
 			},
 		)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
-			return nil, err
+			return err
 		}
 
-		return resp, nil
+		return nil
 	case "kubernetes":
 		jwt, err := os.ReadFile(options.KubernetesJwtPath)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		resp, err := client.Auth.KubernetesLogin(
@@ -76,15 +72,15 @@ func authenticateWithVault(ctx context.Context, client *vault.Client, options *O
 			},
 		)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		if err := client.SetToken(resp.Auth.ClientToken); err != nil {
-			return nil, err
+			return err
 		}
 
-		return resp, nil
+		return nil
 	default:
-		return nil, nil
+		return fmt.Errorf("unsupported auth method: %s", options.AuthMethod)
 	}
 }
