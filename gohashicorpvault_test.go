@@ -22,7 +22,7 @@ func TestGetSecrets_ReturnValue(t *testing.T) {
 		AllowInvalidServerCertificate: true,
 	}
 
-	secretList, err := getSecrets(options)
+	secretList, err := GetSecrets(options)
 	if secretList == nil || err != nil {
 		t.Errorf("Expected non-nil secretList and no error, got secretList: %v, err: %v", secretList, err)
 	}
